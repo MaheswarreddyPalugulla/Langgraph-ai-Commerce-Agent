@@ -15,7 +15,7 @@ def run_tests():
     test_cases = [
         {
             "name": "Test 1 — Product Assist",
-            "prompt": "Wedding guest, midi, under $120 — I'm between M/L. ETA to 560001?"
+            "prompt": "Wedding guest, midi, under $120 — I’m between M/L. ETA to 560001?"
         },
         {
             "name": "Test 2 — Order Help (allowed)", 
@@ -57,7 +57,6 @@ def run_tests():
             print("\n" + "=" * 60)
     
     print(f"\n✅ All {len(test_cases)} tests completed successfully!")
-    print("\n🎯 Ready for submission!")
     return 0
 
 if __name__ == "__main__":

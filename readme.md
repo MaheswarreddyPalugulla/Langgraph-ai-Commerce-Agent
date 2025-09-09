@@ -1,14 +1,15 @@
-# AI Commerce Agent
+# Mini Agentic Commerce Assignment
 
 LangGraph implementation for product assistance and order management with policy enforcement.
 
 ## Overview
 
-This agent provides:
-- Product search and recommendations
+This AI Commerce Agent demonstrates:
+- Product search and recommendations with price caps
 - Secure order lookup and cancellation
-- Strict 60-minute cancellation policy
-- Structured JSON traces for all interactions
+- Strict 60-minute cancellation policy enforcement
+- Complete JSON traces for all interactions
+- Edge case handling and policy validation
 
 ## Core Features
 
