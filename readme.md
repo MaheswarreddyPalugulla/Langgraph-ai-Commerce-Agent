@@ -109,7 +109,7 @@ flowchart LR
   PG --> RESP[Responder]
   RESP --> U2[Reply]
 ```
-![Alt text](images/image.png)
+![Agent Workflow](image.png)
 
 ### Node Functions
 - **Router**: Intent classification (product_assist/order_help/other)
