@@ -105,8 +105,9 @@ def execute_tools_node(state: CommerceState) -> Dict:
     if "product_search" in tools_called:
         # Parse search parameters from user message
         price_max = 1000  # default
-        query = ""
-        tags = []
+        tags = set()  # Using set to avoid duplicates
+        required_sizes = []
+        color = None
         
         # Extract price constraint
         message_lower = user_message.lower()
@@ -114,12 +115,58 @@ def execute_tools_node(state: CommerceState) -> Dict:
         if price_match:
             price_max = int(price_match.group(1))
         
-        # Parse query terms and tags
-        if any(word in message_lower for word in ['wedding', 'midi']):
-            query = "midi"
-            tags = ["wedding", "midi"]
+        # Set query based on dress type and style keywords
+        query_terms = []
+        dress_types = {
+            'wedding': 'wedding dress',
+            'midi': 'midi dress',
+            'party': 'party dress',
+            'slip': 'slip dress',
+            'bodycon': 'bodycon dress',
+            'wrap': 'wrap dress',
+            'a-line': 'a-line dress'
+        }
         
-        products = commerce_tools.product_search(query, price_max, tags)
+        for keyword, term in dress_types.items():
+            if keyword in message_lower:
+                query_terms.append(term)
+                if keyword in ['wedding', 'midi', 'party']:  # Also add as tags
+                    tags.add(keyword)
+        
+        query = ' '.join(query_terms) if query_terms else "dress"  # Default to "dress" if no specific type mentioned
+            
+        # Extract size preferences
+        size_patterns = {
+            r'\b[sS]\b': 'S',
+            r'\b[mM]\b': 'M',
+            r'\b[lL]\b': 'L',
+            r'\bxs\b': 'XS',
+            r'\bextra\s*small\b': 'XS',
+            r'between\s*m\s*/?and?\s*l': ['M', 'L'],
+            r'm\s*/?l': ['M', 'L']
+        }
+        
+        for pattern, size in size_patterns.items():
+            if re.search(pattern, message_lower):
+                if isinstance(size, list):
+                    required_sizes.extend(size)
+                else:
+                    required_sizes.append(size)
+        
+        # Extract color preferences
+        color_words = ['black', 'navy', 'olive', 'charcoal', 'blush']
+        for color_word in color_words:
+            if color_word in message_lower:
+                color = color_word.title()  # Capitalize first letter
+                break
+        
+        products = commerce_tools.product_search(
+            query=query,
+            price_max=price_max,
+            tags=list(tags),
+            required_sizes=required_sizes,
+            color=color
+        )
         evidence.extend([{"type": "product", "data": p} for p in products])
     
     if "order_lookup" in tools_called:

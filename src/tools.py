@@ -38,34 +38,67 @@ class CommerceTools:
             ]
 
 
-    def product_search(self, query: str = "", price_max: int = 1000, tags: List[str] = None) -> List[Dict]:
-        """Search products by query, price, and tags - return max 2 results"""
+    def size_recommender(self, user_preferences: Dict) -> Dict:
+        """Recommend size based on user preferences"""
+        recommendation = {
+            "recommended_size": None,
+            "reason": "",
+            "alternative": None
+        }
+        
+        if user_preferences.get("fit_preference") == "fitted":
+            recommendation["recommended_size"] = "M"
+            recommendation["reason"] = "For a fitted look while maintaining comfort"
+            recommendation["alternative"] = "L"
+        else:
+            recommendation["recommended_size"] = "L"
+            recommendation["reason"] = "For a relaxed, comfortable fit"
+            recommendation["alternative"] = "M"
+            
+        return recommendation
+
+    def product_search(self, query: str = "", price_max: int = 1000, tags: List[str] = None, required_sizes: List[str] = None, color: str = None) -> List[Dict]:
+        """Search products by query, price, tags, sizes, and color"""
         if tags is None:
             tags = []
+        if required_sizes is None:
+            required_sizes = []
         
         results = []
-        query_lower = query.lower()
+        query_lower = query.lower() if query else ""
         
         for product in self.products:
             # Price filter - strict requirement
             if product['price'] > price_max:
                 continue
             
-            # Tag filter (if any tags specified, at least one must match)
-            if tags and not any(tag in product['tags'] for tag in tags):
+            # Tag filter (all specified tags must match)
+            if tags and not all(tag in product['tags'] for tag in tags):
+                continue
+            
+            # Size filter (if sizes specified, all required sizes must be available)
+            if required_sizes and not all(size in product['sizes'] for size in required_sizes):
+                continue
+            
+            # Color filter (if specified)
+            if color and color.lower() != product['color'].lower():
                 continue
             
             # Query filter (search in title and tags)
-            if query and not (
-                query_lower in product['title'].lower() or 
-                any(query_lower in tag.lower() for tag in product['tags'])
-            ):
-                continue
+            if query:
+                query_terms = query_lower.split()
+                matches_query = False
+                for term in query_terms:
+                    if (term in product['title'].lower() or 
+                        any(term in tag.lower() for tag in product['tags'])):
+                        matches_query = True
+                        break
+                if not matches_query:
+                    continue
             
             results.append(product)
         
-        # Return max 2 results, sorted by price (requirement)
-        return sorted(results, key=lambda x: x['price'])[:2]
+        return results
     
     def size_recommender(self, user_inputs: str) -> str:
         """Provide size recommendation based on user preferences"""
